@@ -1,0 +1,117 @@
+#import statements
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+spark = SparkSession.builder.enableHiveSupport().appName('AmazonReviews').getOrCreate()
+sc = spark.sparkContext
+#check to see if thata is available in HDFS
+!hdfs dfs -ls /user/sijieli0801/data
+WARNING: log4j.properties is not found. HADOOP_CONF_DIR may be incomplete.
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=512M; support was removed in 8.0
+Found 4 items
+-rw-r--r--   3 sijieli0801 sijieli0801 32072979001 2022-04-27 17:18 /user/sijieli0801/data/kcore_5.json
+-rw-r--r--   3 sijieli0801 sijieli0801 10597681037 2022-04-27 14:16 /user/sijieli0801/data/kcore_5.json.gz
+-rw-r--r--   3 sijieli0801 sijieli0801 10544467811 2022-04-27 17:10 /user/sijieli0801/data/metadata.json
+-rw-r--r--   3 sijieli0801 sijieli0801  3358565493 2022-04-27 14:25 /user/sijieli0801/data/metadata.json.gz
+%time scores = sc.textFile("/user/sijieli0801/data/kcore_5.json")
+CPU times: user 3.19 ms, sys: 755 µs, total: 3.94 ms
+Wall time: 709 ms
+%time scores = spark.read.json("/user/sijieli0801/data/kcore_5.json")
+CPU times: user 4.35 ms, sys: 6.74 ms, total: 11.1 ms
+Wall time: 31.2 s
+scores.show(2)
++----------+-------+-------+--------------------+-----------+--------------+------------+--------------------+--------------+
+|      asin|helpful|overall|          reviewText| reviewTime|    reviewerID|reviewerName|             summary|unixReviewTime|
++----------+-------+-------+--------------------+-----------+--------------+------------+--------------------+--------------+
+|0000013714| [0, 0]|    4.0|We use this type ...| 12 3, 2013| ACNGUPJ3A3TM9|         GCM|         Nice Hymnal|    1386028800|
+|0000013714| [2, 3]|    5.0|I bought this for...|09 13, 2009|A2SUAM1J3GNN3B| J. McDonald|Heavenly Highway ...|    1252800000|
++----------+-------+-------+--------------------+-----------+--------------+------------+--------------------+--------------+
+only showing top 2 rows
+
+scores.printSchema()
+root
+ |-- asin: string (nullable = true)
+ |-- helpful: array (nullable = true)
+ |    |-- element: long (containsNull = true)
+ |-- overall: double (nullable = true)
+ |-- reviewText: string (nullable = true)
+ |-- reviewTime: string (nullable = true)
+ |-- reviewerID: string (nullable = true)
+ |-- reviewerName: string (nullable = true)
+ |-- summary: string (nullable = true)
+ |-- unixReviewTime: long (nullable = true)
+
+%time metadata = spark.read.json("/user/sijieli0801/data/metadata.json")
+CPU times: user 6.53 ms, sys: 2.92 ms, total: 9.46 ms
+Wall time: 23.9 s
+metadata.show(2)
++---------------+----------+-----+--------------------+--------------------+--------------------+-----+--------------------+--------------------+--------------------+
+|_corrupt_record|      asin|brand|          categories|         description|               imUrl|price|             related|           salesRank|               title|
++---------------+----------+-----+--------------------+--------------------+--------------------+-----+--------------------+--------------------+--------------------+
+|           null|0001048791| null|           [[Books]]|                null|http://ecx.images...| null|                null|[,,,,, 6334800,,,...|The Crucible: Per...|
+|           null|0000143561| null|[[Movies & TV, Mo...|3Pack DVD set - I...|http://g-ecx.imag...|12.99|[, [B0036FO6SI, B...|[,,,,,,,,,,,,,,,,...|Everyday Italian ...|
++---------------+----------+-----+--------------------+--------------------+--------------------+-----+--------------------+--------------------+--------------------+
+only showing top 2 rows
+
+metadata.printSchema()
+root
+ |-- _corrupt_record: string (nullable = true)
+ |-- asin: string (nullable = true)
+ |-- brand: string (nullable = true)
+ |-- categories: array (nullable = true)
+ |    |-- element: array (containsNull = true)
+ |    |    |-- element: string (containsNull = true)
+ |-- description: string (nullable = true)
+ |-- imUrl: string (nullable = true)
+ |-- price: double (nullable = true)
+ |-- related: struct (nullable = true)
+ |    |-- also_bought: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- also_viewed: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- bought_together: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |    |-- buy_after_viewing: array (nullable = true)
+ |    |    |-- element: string (containsNull = true)
+ |-- salesRank: struct (nullable = true)
+ |    |-- Appliances: long (nullable = true)
+ |    |-- Arts, Crafts & Sewing: long (nullable = true)
+ |    |-- Automotive: long (nullable = true)
+ |    |-- Baby: long (nullable = true)
+ |    |-- Beauty: long (nullable = true)
+ |    |-- Books: long (nullable = true)
+ |    |-- Camera &amp; Photo: long (nullable = true)
+ |    |-- Cell Phones & Accessories: long (nullable = true)
+ |    |-- Clothing: long (nullable = true)
+ |    |-- Computers & Accessories: long (nullable = true)
+ |    |-- Electronics: long (nullable = true)
+ |    |-- Gift Cards Store: long (nullable = true)
+ |    |-- Grocery & Gourmet Food: long (nullable = true)
+ |    |-- Health & Personal Care: long (nullable = true)
+ |    |-- Home &amp; Kitchen: long (nullable = true)
+ |    |-- Home Improvement: long (nullable = true)
+ |    |-- Industrial & Scientific: long (nullable = true)
+ |    |-- Jewelry: long (nullable = true)
+ |    |-- Kitchen & Dining: long (nullable = true)
+ |    |-- Magazines: long (nullable = true)
+ |    |-- Movies & TV: long (nullable = true)
+ |    |-- Music: long (nullable = true)
+ |    |-- Musical Instruments: long (nullable = true)
+ |    |-- Office Products: long (nullable = true)
+ |    |-- Patio, Lawn & Garden: long (nullable = true)
+ |    |-- Pet Supplies: long (nullable = true)
+ |    |-- Prime Pantry: long (nullable = true)
+ |    |-- Shoes: long (nullable = true)
+ |    |-- Software: long (nullable = true)
+ |    |-- Sports &amp; Outdoors: long (nullable = true)
+ |    |-- Toys & Games: long (nullable = true)
+ |    |-- Video Games: long (nullable = true)
+ |    |-- Watches: long (nullable = true)
+ |-- title: string (nullable = true)
+
+HIVE table
+from pyspark.sql import HiveContext
+hive_context = HiveContext(sc)
+hive_context.sql("use sijieli");
+hive_context.sql("show tables").show();
+scores.write.mode('overwrite').saveAsTable('scores')
+#metadata.write.mode('overwrite').saveAsTable('metadata')

@@ -1,0 +1,21 @@
+hdfs dfs -put /home/sijieli0801/kcore_5.json.gz /user/sijieli0801/data/kcore_5.json.gz 
+
+
+hdfs dfs -put /home/sijieli0801/ML/slice_localization_data.csv /user/sijieli0801/ML/slice_localization_data.csv
+
+
+hdfs dfs -put /home/sijieli0801/metadata.json.gz /user/sijieli0801/data/metadata.json.gz 
+
+hdfs dfs -cat /user/sijieli0801/data/metadata.json.gz | gzip -d | hdfs dfs -put - /user/sijieli0801/data/metadata.json
+
+hdfs dfs -cat /user/sijieli0801/data/kcore_5.json.gz | gzip -d | hdfs dfs -put - /user/sijieli0801/data/kcore_5.json
+
+
+hdfs dfs -mkdir /user/sijieli0801/BigData/Dataset
+
+
+hdfs dfs -put /home/sijieli0801/crimes.csv /user/sijieli0801/BigData/Dataset/crimes.csv
+
+hdfs dfs -put /home/sijieli0801/ijzp-q8t2.csv /user/sijieli0801/BigData/Dataset/crimes_metadata.csv
+
+hdfs dfs -ls /user/sijieli0801/BigData/Dataset
